@@ -79,59 +79,40 @@ class SOARequestCreator extends AbstractCreator{
   }
 
   private buildBody(builder) {
-    builder."$soapPrefix:Body"(){
-      log.debug "creating body"
-      if(isRPC(bindingName)){
-					        log.debug "isRPC"
-							
-							for (Binding bnd : definitions.getBindings()) {
-						        for (BindingOperation bop : bnd.getOperations()) {
-						            if(bnd.getBinding() instanceof AbstractSOAPBinding && bop.getName().equals(operationName)) {
-										
-										if(bop.getInput().getBindingElements().get(0).getUse().equals("encoded")){
-											"ns1:$operationName"('xmlns:ns1':bop.getInput().getBindingElements().get(0).getNamespace()){
-												def ctx = creatorContext
-												ctx.path = "${ctx.path}${operationName}/"
-												log.debug "create body from bodyElement"
-												bodyElement.parts.each{
-												  it.create(creator, ctx)
-												}
-											}
-										}else{
-											"ns1:$operationName"('xmlns:ns1=\'karl heinz wird der auch wirklich mit Z geschrieben?\''){
-												def ctx = creatorContext
-												ctx.path = "${ctx.path}${operationName}/"
-												log.debug "create body from bodyElement"
-												bodyElement.parts.each{
-												  it.create(creator, ctx)
-												}
-											}
-										}
-						            }
-								}
-							}
-		
-		
-		
-		
-		
-//        "ns1:$operationName"('xmlns:ns1':definitions.getBindings().get(0).getOperations().get(0).getInput().getBindingElements().get(0).getNamespace()){
-//			"ns1:$operationName"('xmlns:ns1=\'http://tempuri.org/gevisExec/message/\''){
-//          def ctx = creatorContext
-//          ctx.path = "${ctx.path}${operationName}/"
-//          log.debug "create body from bodyElement"
-//          bodyElement.parts.each{
-//            it.create(creator, ctx)
-//          }
-//        }
-      } else {
-        log.debug "creating body from definitions"
-        log.debug "element : ${bodyElement.parts[0].element}"
-        bodyElement.parts[0].element.create(creator, creatorContext)
+      builder."$soapPrefix:Body"(){
+          log.debug "creating body"
+          if(isRPC(bindingName)){
+              log.debug "isRPC"
+              "ns1:$operationName"('xmlns:ns1':getNamespaceForRCPBinding()){
+                  def ctx = creatorContext
+                  ctx.path = "${ctx.path}${operationName}/"
+                  log.debug "create body from bodyElement"
+                  bodyElement.parts.each{
+                      it.create(creator, ctx)
+                  }
+              }
+          } else {
+              log.debug "creating body from definitions"
+              log.debug "element : ${bodyElement.parts[0].element}"
+              bodyElement.parts[0].element.create(creator, creatorContext)
+          }
       }
-    }
   }
 
+  private getNamespaceForRCPBinding(){
+      for (Binding bnd : definitions.getBindings()) {
+          for (BindingOperation bop : bnd.getOperations()) {
+             if(bnd.getBinding() instanceof AbstractSOAPBinding && bop.getName().equals(operationName)) {
+                 if(bop.getInput().getBindingElements().get(0).getNamespace() != null ){
+                     return bop.getInput().getBindingElements().get(0).getNamespace();
+                 }else{
+                     return definitions.targetNamespace;
+                 }
+             }
+          }
+      }
+  }
+  
   private buildHeader(builder) {
     log.debug "creating headers"
     builder."$soapPrefix:Header"(){
