@@ -123,9 +123,19 @@ class RequestCreator extends AbstractSchemaCreator<RequestCreatorContext> {
   public getElementXpaths(ctx){
     def es = []
     ctx.formParams.keySet().each {
-      def e = it =~ /${ctx.path}${ctx.element.name}\/.*?/
+	  def e = it =~ /${ctx.path}${ctx.element.name}\//
       if (e)  es << e[0]
     }
+	
+	if(es.size() == 0){
+		//array is empty
+		ctx.formParams.keySet().each {
+//			def el = it =~ /${ctx.path}${ctx.element.name}\//
+	  		def e = it =~ /${ctx.path}${ctx.element.name}[\[]\d[\]]\//
+	        if (e)  es << e[0]
+		}
+	}
+	
     es.unique()
   }
   
