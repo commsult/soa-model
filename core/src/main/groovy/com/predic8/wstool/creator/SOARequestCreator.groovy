@@ -92,9 +92,13 @@ class SOARequestCreator extends AbstractCreator{
                   }
               }
           } else {
-              log.debug "creating body from definitions"
-              log.debug "element : ${bodyElement.parts[0].element}"
-              bodyElement.parts[0].element.create(creator, creatorContext)
+              if(bodyElement.parts[0] != null) {
+				  log.debug "creating body from definitions"
+				  log.debug "element : ${bodyElement.parts[0].element}"
+				  bodyElement.parts[0].element.create(creator, creatorContext)
+			  }else{
+				  log.debug "no element found"
+			  }
           }
       }
   }
