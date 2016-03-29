@@ -119,26 +119,46 @@ class RequestCreator extends AbstractSchemaCreator<RequestCreatorContext> {
       complexType.model?.create(this, ctx)
     }
   }
-  
+
   public getElementXpaths(ctx){
     def es = []
+
+    //FormParameter = xpath:test/testResult/
+    //              = xpath:test/testEntry[0]/
+    //              = xpath:test/testEntry[1]/
+    // old machter machtes   = xpath:test/test<enythink else>;
+    // old result for = xpath:test/testEntry.*?\/ are
+    //              = xpath:test/testResult/
+    //              = xpath:test/testEntry[0]/
+    //              = xpath:test/testEntry[1]/
+    // we want to get get only xpath:test/testResult/
+    def escapedCtxPath = escapeForRegex(ctx.path);
     ctx.formParams.keySet().each {
-	  def e = it =~ /${ctx.path}${ctx.element.name}\//
-      if (e)  es << e[0]
+        def e = it =~ /${escapedCtxPath}${ctx.element.name}\//
+        if (e)  es << e[0]
     }
-	
-	if(es.size() == 0){
-		//array is empty
-		ctx.formParams.keySet().each {
-//			def el = it =~ /${ctx.path}${ctx.element.name}\//
-	  		def e = it =~ /${ctx.path}${ctx.element.name}[\[]\d[\]]\//
-	        if (e)  es << e[0]
-		}
-	}
-	
+
+    if(es.size() == 0){
+        //array is empty
+        ctx.formParams.keySet().each {
+
+        def e = it =~ /${escapedCtxPath}${ctx.element.name}[\[]\d[\]]\//
+        if (e)  es << e[0]
+      }
+    }
     es.unique()
   }
-  
+
+  public escapeForRegex(ctxPath){
+        def result = "";
+        result = ctxPath.replaceAll(/\[/,"\\\\[");
+        result = result.replaceAll(/\]/,"\\\\]");
+
+        //@improvement escape more specal characters
+        //maybe other xpath expressions are invalide  like xpath:test|test1|test2|*
+        return result;
+  }
+
   void createSimpleRestriction(BaseRestriction rest, RequestCreatorContext ctx) {
     buildElement(ctx,text:getFormParamValue(ctx))
   }
