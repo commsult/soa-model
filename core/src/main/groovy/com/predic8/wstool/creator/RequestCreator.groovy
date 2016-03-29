@@ -142,7 +142,7 @@ class RequestCreator extends AbstractSchemaCreator<RequestCreatorContext> {
         //array is empty
         ctx.formParams.keySet().each {
 
-        def e = it =~ /${escapedCtxPath}${ctx.element.name}[\[]\d[\]]\//
+        def e = it =~ /${escapedCtxPath}${ctx.element.name}[\[]\d+[\]]\//
         if (e)  es << e[0]
       }
     }
