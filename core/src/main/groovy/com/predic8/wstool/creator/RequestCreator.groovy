@@ -175,6 +175,31 @@ class RequestCreator extends AbstractSchemaCreator<RequestCreatorContext> {
   void createPart(Part part, RequestCreatorContext ctx){
     builder."${part.name}"(ctx.formParams["${ctx.path}${part.name}"])
   }
+
+  void createUnion(Union union, RequestCreatorContext ctx) {
+
+      log.debug "create union"
+        union.simpleTypes[0]?.create(this, ctx)
+
+      log.trace "iterate member types "
+      if(union.memberTypes) {
+          union.memberTypes.each {
+
+            def refType = union.schema.getType(it)
+            if(refType && !(refType instanceof BuiltInSchemaType)){
+                log.trace "No BuiltInSchemaType"
+                refType.create(this, ctx)
+            }
+
+            if(refType && (refType instanceof BuiltInSchemaType)){
+                // TODO: check BuildInSchemaType
+                log.trace "BuiltInSchemaType"
+            }
+          }
+
+      }
+
+    }
 	
 	@Override
 	protected getElementTagName(Element element, ctx){
